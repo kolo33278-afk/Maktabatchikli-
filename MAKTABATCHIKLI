@@ -1,0 +1,52 @@
+// Set up scene, camera, renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add ambient light and a simple ground plane (stylized Medina floor)
+scene.add(new THREE.AmbientLight(0x404040));
+const geometry = new THREE.PlaneGeometry(10, 10);
+const material = new THREE.MeshBasicMaterial({ color: 0x8B4513, side: THREE.DoubleSide }); // Brown for tiles
+const plane = new THREE.Mesh(geometry, material);
+plane.rotation.x = -Math.PI / 2;
+scene.add(plane);
+
+// Add a 3D cube as a placeholder for argan oil bottle
+const bottleGeometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+const bottleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const bottle = new THREE.Mesh(bottleGeometry, bottleMaterial);
+bottle.position.set(0, 0.5, -2);
+scene.add(bottle);
+
+// Camera position
+camera.position.z = 5;
+
+// Mouse interaction
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onMouseClick(event) {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    if (intersects.length > 0 && intersects[0].object === bottle) {
+        document.getElementById('product-info').style.display = 'block';
+    }
+}
+window.addEventListener('click', onMouseClick, false);
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+animate();
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
